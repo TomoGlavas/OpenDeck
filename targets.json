@@ -15,6 +15,11 @@
         "test": false
     },
     {
+        "name": "fw_cardamom",
+        "release": false,
+        "test": false
+    },
+    {
         "name": "fw_dubfocus",
         "release": true,
         "test": true
