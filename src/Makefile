@@ -198,7 +198,6 @@ format:
 	-not -path "*gen*" \
 	-not -name "*Pins.h" \
 	-not -name "*Hardware.h" \
-	-not -name "*MCU.h" \
 	-not -name "*hal_conf*" \
 	-exec $(CLANG_FORMAT) -style=file -i {} \;
 ifeq ($(CF_FAIL_ON_DIFF), 1)
