@@ -112,8 +112,6 @@
                 "fw_16u2",
                 "fw_8u2",
                 "fw_mega6mux",
-                "boot_leonardo",
-                "boot_promicro",
                 "boot_mega",
                 "boot_uno",
                 "boot_teensy2pp",

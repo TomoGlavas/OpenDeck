@@ -90,11 +90,6 @@
         "test": false
     },
     {
-        "name": "boot_leonardo",
-        "release": false,
-        "test": false
-    },
-    {
         "name": "boot_mega16u2",
         "release": false,
         "test": false
@@ -111,11 +106,6 @@
     },
     {
         "name": "boot_mega2560_jose",
-        "release": false,
-        "test": false
-    },
-    {
-        "name": "boot_promicro",
         "release": false,
         "test": false
     },
