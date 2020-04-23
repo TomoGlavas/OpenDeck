@@ -96,11 +96,6 @@ then
     exit 1
 fi
 
-if [[ "$TYPE" == "tests" ]]
-then
-    make pre-build
-fi
-
 for (( i=0; i<len_targets; i++ ))
 do
     if [[ "$TYPE" != "tests" ]]
@@ -120,5 +115,10 @@ do
     fi
 
     printf '\n%s\n' "***Building ${targets[$i]}***"
+    if [[ "$TYPE" == "tests" ]]
+    then
+        make pre-build TARGETNAME="${targets[$i]}"
+    fi
+
     make TARGETNAME="${targets[$i]}"
 done
