@@ -50,10 +50,9 @@
         {
             "id": "target",
             "type": "pickString",
-            "default": "fw_opendeck",
+            "default": "fw_mega2560",
             "description": "Select target for which to build:",
             "options": [
-                "fw_opendeck",
                 "fw_discovery",
                 "fw_leonardo",
                 "fw_mega2560",
@@ -65,7 +64,6 @@
                 "fw_16u2",
                 "fw_8u2",
                 "fw_mega6mux",
-                "boot_opendeck",
                 "boot_leonardo",
                 "boot_promicro",
                 "boot_mega",
