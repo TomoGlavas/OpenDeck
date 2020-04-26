@@ -24,12 +24,6 @@ ARCH := $(shell $(FIND) board -type d ! -path *build -name *$(BOARD_DIR) | cut -
 #determine MCU by directory in which the board dir is located
 MCU := $(shell $(FIND) board -type d -name *$(BOARD_DIR) | cut -d/ -f4 | head -n 1)
 
-ifeq ($(TARGETNAME),uploadboot)
-    ifeq ($(filter fw_opendeck fw_leonardo fw_promicro fw_dubfocus fw_teensy2pp fw_bergamot fw_mega fw_uno, $(shell cat $(BUILD_BASE)/TARGET)), )
-        $(error Not available for current target.)
-    endif
-endif
-
 ifeq ($(MCU), atmega32u4)
     FUSE_UNLOCK := 0xff
     FUSE_EXT := 0xc8
@@ -108,7 +102,8 @@ ifeq ($(ARCH),avr)
     USE_STATIC_OPTIONS=0 \
     USB_DEVICE_ONLY \
     FIXED_CONTROL_ENDPOINT_SIZE=8 \
-    INTERRUPT_CONTROL_ENDPOINT
+    INTERRUPT_CONTROL_ENDPOINT \
+    USE_FLASH_DESCRIPTORS
 
     DEFINES += APP_LENGTH_LOCATION=$(FLASH_SIZE_START_ADDR)
     DEFINES += BOOT_START_ADDR=$(BOOT_START_ADDR)
@@ -118,13 +113,9 @@ ifeq ($(ARCH),avr)
         DEFINES += \
         ORDERED_EP_CONFIG \
         NO_SOF_EVENTS \
-        USE_RAM_DESCRIPTORS \
         DEVICE_STATE_AS_GPIOR \
         NO_DEVICE_REMOTE_WAKEUP \
         NO_DEVICE_SELF_POWER
-    else ifeq ($(findstring fw,$(TARGETNAME)), fw)
-        DEFINES += \
-        USE_FLASH_DESCRIPTORS
     endif
 else ifeq ($(ARCH),stm32)
     DEFINES += \

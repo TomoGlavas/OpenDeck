@@ -34,19 +34,9 @@ ifeq ($(ARCH), avr)
         modules/lufa/LUFA/Drivers/USB/Core/ConfigDescriptors.c \
         modules/lufa/LUFA/Drivers/USB/Core/DeviceStandardReq.c \
         modules/lufa/LUFA/Drivers/USB/Core/Events.c \
-        modules/lufa/LUFA/Drivers/USB/Core/USBTask.c
-
-        #additional sources differ for application and bootloader
-        ifeq ($(findstring boot,$(TARGETNAME)), boot)
-            #bootloader
-            SOURCES += \
-            modules/lufa/LUFA/Drivers/USB/Class/Device/HIDClassDevice.c
-        else
-            #application
-            SOURCES += \
-            modules/lufa/LUFA/Drivers/USB/Class/Device/AudioClassDevice.c \
-            modules/lufa/LUFA/Drivers/USB/Class/Device/MIDIClassDevice.c
-        endif
+        modules/lufa/LUFA/Drivers/USB/Core/USBTask.c \
+        modules/lufa/LUFA/Drivers/USB/Class/Device/AudioClassDevice.c \
+        modules/lufa/LUFA/Drivers/USB/Class/Device/MIDIClassDevice.c
     endif
 else ifeq ($(ARCH),stm32)
     SOURCES += $(shell $(FIND) ./board/stm32/gen/$(MCU)/Drivers/STM32*_HAL_Driver/Src -name "*.c")
@@ -78,9 +68,9 @@ ifeq ($(findstring boot,$(TARGETNAME)), boot)
     SOURCES += $(shell find ./bootloader/mcu -type f -name "*.cpp")
 
     ifneq ($(shell cat board/$(ARCH)/variants/$(MCU)/$(BOARD_DIR)/Hardware.h | grep USB_MIDI_SUPPORTED), )
-        SOURCES += $(shell $(FIND) ./board/common/usb/descriptors/hid -type f -name "*.cpp")
-        SOURCES += $(shell $(FIND) ./board/common/usb/descriptors/hid -type f -name "*.c")
-        SOURCES += $(shell $(FIND) ./board/$(ARCH)/usb/hid -type f -name "*.cpp")
+        SOURCES += $(shell $(FIND) ./board/common/usb/descriptors/midi -type f -name "*.cpp")
+        SOURCES += $(shell $(FIND) ./board/common/usb/descriptors/midi -type f -name "*.c")
+        SOURCES += $(shell $(FIND) ./board/$(ARCH)/usb/midi -type f -name "*.cpp")
 
         ifneq ($(shell cat board/$(ARCH)/variants/$(MCU)/$(BOARD_DIR)/Hardware.h | grep USB_LINK_MCU), )
             #for USB link MCUs, compile UART as well - needed to communicate with main MCU
