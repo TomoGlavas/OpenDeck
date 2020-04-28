@@ -159,7 +159,7 @@ else
 endif
 
 pre-build:
-	@../scripts/gen_touchscreen_indicators.sh application/io/touchscreen/model/nextion/coordinates/$(BOARD_DIR).json
+	@../scripts/gen_touchscreen_indicators.sh application/io/touchscreen/coordinates/$(BOARD_DIR).json
 
 $(BUILD_DIR)/%.c.o: %.c
 	@mkdir -p $(@D)
