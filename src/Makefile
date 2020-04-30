@@ -157,6 +157,10 @@ else
 	@arm-none-eabi-objcopy -I ihex "$(TARGET).hex" -O binary "$(TARGET).bin"
 	@arm-none-eabi-size "$(TARGET).elf"
 endif
+ifeq ($(findstring fw,$(TARGETNAME)), fw)
+	@echo Creating SysEx file...
+	@../scripts/sysex_fw_create.sh $(TARGET).bin $(TARGET).sysex
+endif
 
 pre-build:
 	@../scripts/gen_touchscreen.sh application/io/touchscreen/coordinates/$(BOARD_DIR).json
