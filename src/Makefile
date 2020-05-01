@@ -1,21 +1,34 @@
 include Toolchain.mk
 
 BUILD_DIR_BASE := ./build
-TARGETNAME := fw_mega2560
+TARGETNAME := mega2560
 
 ifneq (,$(wildcard $(BUILD_DIR_BASE)/TARGET))
     TARGETNAME := $(shell cat $(BUILD_DIR_BASE)/TARGET)
     DEBUG := $(shell cat $(BUILD_DIR_BASE)/DEBUG)
 endif
 
-ifneq ($(findstring $(TARGETNAME), $(shell jq ".[] | .name" ../targets.json)), $(TARGETNAME))
+ifneq ($(findstring $(TARGETNAME), $(shell jq ".targets[] | .name" ../targets.json)), $(TARGETNAME))
     $(error Target doesn't exist)
 endif
 
-ifeq ($(DEBUG),1)
-    BUILD_DIR := $(BUILD_DIR_BASE)/$(TARGETNAME)/debug
+ifeq ($(BOOT),1)
+    #verify if target has bootloader
+    ifeq ($(shell jq '.targets[] | select(.name=="$(TARGETNAME)") | .bootloader' ../targets.json), false)
+        $(error This target doesn't have bootloader)
+    endif
+
+    BUILD_DIR := $(BUILD_DIR_BASE)/bootloader
 else
-    BUILD_DIR := $(BUILD_DIR_BASE)/$(TARGETNAME)/release
+    BUILD_DIR := $(BUILD_DIR_BASE)/application
+endif
+
+BUILD_DIR := $(BUILD_DIR)/$(TARGETNAME)
+
+ifeq ($(DEBUG),1)
+    BUILD_DIR := $(BUILD_DIR)/debug
+else
+    BUILD_DIR := $(BUILD_DIR)/release
 endif
 
 TARGET := $(BUILD_DIR)/$(TARGETNAME)
@@ -28,7 +41,7 @@ include Sources.mk
 
 # shell script "build_combined.sh" can generate binary with combined firmware and bootloader
 # if this file exists, use it when running flash target
-MERGED_TARGET := $(shell $(FIND) -name "*merged_$(BOARD_DIR).hex")
+MERGED_TARGET := $(shell $(FIND) $(BUILD_DIR_BASE)/merged -name "*$(BOARD_DIR).hex" 2>/dev/null)
 
 #when set to 1, format target will fail if there are any changes to the repository after formatting
 CF_FAIL_ON_DIFF := 0
@@ -62,13 +75,11 @@ LDFLAGS := \
 -Wl,-Map="$(TARGET).map",--cref
 
 ifeq ($(ARCH),avr)
-    ifneq ($(filter boot_%, $(TARGETNAME)), )
+    ifeq ($(BOOT),1)
         #make sure to link .text at correct address in bootloader
         LDFLAGS += -Wl,--section-start=.text=$(BOOT_START_ADDR)
-    endif
-
-    #append length only in firmware
-    ifeq ($(findstring fw,$(TARGETNAME)), fw)
+    else
+        #append length only in firmware
         LEN_APPEND := 1
     endif
 
@@ -157,7 +168,7 @@ else
 	@arm-none-eabi-objcopy -I ihex "$(TARGET).hex" -O binary "$(TARGET).bin"
 	@arm-none-eabi-size "$(TARGET).elf"
 endif
-ifeq ($(findstring fw,$(TARGETNAME)), fw)
+ifneq ($(BOOT),1)
 	@echo Creating SysEx file...
 	@../scripts/sysex_fw_create.sh $(TARGET).bin $(TARGET).sysex
 endif

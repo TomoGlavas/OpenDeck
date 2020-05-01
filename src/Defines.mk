@@ -11,12 +11,7 @@ else
     DEFINES += NDEBUG
 endif
 
-#flash type specific
-ifeq ($(findstring boot,$(TARGETNAME)), boot)
-    BOARD_DIR := $(subst boot_,,$(TARGETNAME))
-else ifeq ($(findstring fw,$(TARGETNAME)), fw)
-    BOARD_DIR := $(subst fw_,,$(TARGETNAME))
-endif
+BOARD_DIR := $(TARGETNAME)
 
 #determine the architecture, mcu and mcu family by directory in which the board dir is located
 ARCH := $(shell $(FIND) board -type d ! -path *build -name *$(BOARD_DIR) | cut -d/ -f2 | head -n 1)
@@ -113,7 +108,7 @@ ifeq ($(ARCH),avr)
     DEFINES += BOOT_START_ADDR=$(BOOT_START_ADDR)
 
     #flash type specific
-    ifeq ($(findstring boot,$(TARGETNAME)), boot)
+    ifeq ($(BOOT),1)
         DEFINES += \
         ORDERED_EP_CONFIG \
         NO_SOF_EVENTS \
@@ -134,7 +129,7 @@ else ifeq ($(ARCH),stm32)
 endif
 
 DEFINES += OD_BOARD_$(shell echo $(BOARD_DIR) | tr 'a-z' 'A-Z')
-DEFINES += FW_UID=$(shell ../scripts/fw_uid_gen.sh $(TARGETNAME))
+DEFINES += FW_UID=$(shell ../scripts/fw_uid_gen.sh $(TARGETNAME) $(BOOT))
 
 ifneq ($(HARDWARE_VERSION_MAJOR), )
     DEFINES += HARDWARE_VERSION_MAJOR=$(HARDWARE_VERSION_MAJOR)
@@ -144,7 +139,7 @@ ifneq ($(HARDWARE_VERSION_MINOR), )
     DEFINES += HARDWARE_VERSION_MINOR=$(HARDWARE_VERSION_MINOR)
 endif
 
-ifeq ($(findstring boot,$(TARGETNAME)), boot)
+ifeq ($(BOOT),1)
     DEFINES += FW_BOOT
 else
     DEFINES += FW_APP

@@ -15,7 +15,7 @@
         },
         {
             "label": "[FW/STM32FDiscovery/Debug] Build",
-            "command": "cd ./src && compiledb -d . make TARGETNAME=fw_discovery LANG=C DEBUG=1",
+            "command": "cd ./src && compiledb -d . make TARGETNAME=discovery LANG=C DEBUG=1",
             "type": "shell",
             "problemMatcher": [
                 "$gcc"
@@ -27,7 +27,7 @@
         },
         {
             "label": "[BTLDR/STM32FDiscovery/Debug] Build",
-            "command": "cd ./src && compiledb -d . make TARGETNAME=boot_discovery LANG=C DEBUG=1",
+            "command": "cd ./src && compiledb -d . make TARGETNAME=discovery LANG=C DEBUG=1 BOOT=1",
             "type": "shell",
             "problemMatcher": [
                 "$gcc"
@@ -39,7 +39,7 @@
         },
         {
             "label": "[FW/Cardamom/Debug] Build",
-            "command": "cd ./src && compiledb -d . make TARGETNAME=fw_cardamom LANG=C DEBUG=1",
+            "command": "cd ./src && compiledb -d . make TARGETNAME=cardamom LANG=C DEBUG=1",
             "type": "shell",
             "problemMatcher": [
                 "$gcc"
@@ -51,7 +51,7 @@
         },
         {
             "label": "[BTLDR/Cardamom/Debug] Build",
-            "command": "cd ./src && compiledb -d . make TARGETNAME=boot_cardamom LANG=C DEBUG=1",
+            "command": "cd ./src && compiledb -d . make TARGETNAME=cardamom LANG=C DEBUG=1 BOOT=1",
             "type": "shell",
             "problemMatcher": [
                 "$gcc"
@@ -98,28 +98,20 @@
         {
             "id": "target",
             "type": "pickString",
-            "default": "fw_mega2560",
+            "default": "mega2560",
             "description": "Select target for which to build:",
             "options": [
-                "fw_discovery",
-                "fw_leonardo",
-                "fw_mega2560",
-                "fw_promicro",
-                "fw_uno",
-                "fw_teensy2pp",
-                "fw_dubfocus",
-                "fw_bergamot",
-                "fw_16u2",
-                "fw_8u2",
-                "fw_mega6mux",
-                "boot_mega",
-                "boot_uno",
-                "boot_teensy2pp",
-                "boot_dubfocus",
-                "boot_bergamot",
-                "boot_16u2 VARIANT=VARIANT_MEGA",
-                "boot_16u2 VARIANT=VARIANT_UNO",
-                "boot_discovery"
+                "discovery",
+                "leonardo",
+                "mega2560",
+                "promicro",
+                "uno",
+                "teensy2pp",
+                "dubfocus",
+                "bergamot",
+                "16u2",
+                "8u2",
+                "mega6mux",
             ]
         },
         {
