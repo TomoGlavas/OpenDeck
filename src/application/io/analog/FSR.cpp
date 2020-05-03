@@ -87,5 +87,5 @@ void Analog::checkFSRvalue(uint8_t analogID, uint16_t pressure)
     }
 
     //update values
-    lastAnalogueValue[analogID] = pressure;
+    lastMIDIValue[analogID] = pressure;
 }

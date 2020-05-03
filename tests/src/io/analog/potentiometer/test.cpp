@@ -167,8 +167,6 @@ TEST_SETUP()
     for (int i = 0; i < MAX_NUMBER_OF_ANALOG; i++)
         analog.debounceReset(i);
 
-    analog.disableExpFiltering();
-
     resetReceived();
 }
 
@@ -291,8 +289,7 @@ TEST_CASE(PitchBendTest)
     //application may use some debouncing techniques so perform only best-effort checks here
 
     auto     adcConfig        = analog.config();
-    uint32_t valueDiff        = 16384 / (adcConfig.adcMaxValue + 1);
-    uint32_t totalMIDIvalues  = 16384 / valueDiff / 2;    //don't expect the value to change on every change of raw value
+    uint32_t totalMIDIvalues  = 16384 / adcConfig.midiStepMinDiff14bit / 2;    //don't expect the value to change on every change of raw value
     uint32_t expectedMessages = MAX_NUMBER_OF_ANALOG * totalMIDIvalues;
 
     for (int i = 0; i <= adcConfig.adcMaxValue; i++)

@@ -33,16 +33,22 @@ void Analog::checkPotentiometerValue(type_t analogType, uint8_t analogID, uint32
     if (use14bit)
     {
         maxLimit = MIDI_14_BIT_VALUE_MAX;
-        stepDiff = adcConfig.stepMinDiff14bit;
+        stepDiff = adcConfig.midiStepMinDiff14bit;
     }
     else
     {
         maxLimit = MIDI_7_BIT_VALUE_MAX;
-        stepDiff = adcConfig.stepMinDiff7bit;
+        stepDiff = adcConfig.midiStepMinDiff7bit;
     }
 
+    auto midiValue = core::misc::mapRange(value, static_cast<uint32_t>(0), static_cast<uint32_t>(adcConfig.adcMaxValue), static_cast<uint32_t>(0), static_cast<uint32_t>(maxLimit));
+
     //if the first read value is 0, mark it as increasing since the lastAnalogueValue is initialized to value 0 for all pots
-    potDirection_t direction = value >= lastAnalogueValue[analogID] ? potDirection_t::increasing : potDirection_t::decreasing;
+    potDirection_t direction = midiValue >= lastMIDIValue[analogID] ? potDirection_t::increasing : potDirection_t::decreasing;
+
+    //this will allow value 0 as the first sent value
+    if ((midiValue == lastMIDIValue[analogID]) && (lastDirection[analogID] != potDirection_t::initial))
+        return;
 
     //don't perform these checks on initial value readout
     if (lastDirection[analogID] != potDirection_t::initial)
@@ -52,19 +58,14 @@ void Analog::checkPotentiometerValue(type_t analogType, uint8_t analogID, uint32
         if (direction != lastDirection[analogID])
         {
             if (use14bit)
-                stepDiff *= 2;
+                stepDiff *= adcConfig.midiStepMulDirChange14bit;
+            else
+                stepDiff *= adcConfig.midiStepMulDirChange7bit;
         }
 
-        if (abs(static_cast<uint16_t>(value) - lastAnalogueValue[analogID]) < stepDiff)
+        if (abs(static_cast<uint16_t>(midiValue) - lastMIDIValue[analogID]) < stepDiff)
             return;
     }
-
-    auto midiValue    = core::misc::mapRange(value, static_cast<uint32_t>(0), static_cast<uint32_t>(adcConfig.adcMaxValue), static_cast<uint32_t>(0), static_cast<uint32_t>(maxLimit));
-    auto oldMIDIvalue = core::misc::mapRange(static_cast<uint32_t>(lastAnalogueValue[analogID]), static_cast<uint32_t>(0), static_cast<uint32_t>(adcConfig.adcMaxValue), static_cast<uint32_t>(0), static_cast<uint32_t>(maxLimit));
-
-    //this will allow value 0 as the first sent value
-    if ((midiValue == oldMIDIvalue) && (lastDirection[analogID] != potDirection_t::initial))
-        return;
 
     lastDirection[analogID] = direction;
 
@@ -193,5 +194,5 @@ void Analog::checkPotentiometerValue(type_t analogType, uint8_t analogID, uint32
     cInfo.send(Database::block_t::analog, analogID);
 
     //update values
-    lastAnalogueValue[analogID] = value;
+    lastMIDIValue[analogID] = midiValue;
 }

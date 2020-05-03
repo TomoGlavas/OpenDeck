@@ -46,14 +46,16 @@ namespace IO
 
         typedef struct
         {
-            const uint16_t adcMaxValue;                 ///< Maxmimum raw ADC value.
-            const uint16_t stepMinDiff7bit;             ///< Minimum difference between two raw ADC readings to consider that value has been changed for 7-bit MIDI values.
-            const uint16_t stepMinDiff14bit;            ///< Minimum difference between two raw ADC readings to consider that value has been changed for 14-bit MIDI values.
-            const uint16_t fsrMinValue;                 ///< Minimum raw ADC reading for FSR sensors.
-            const uint16_t fsrMaxValue;                 ///< Maximum raw ADC reading for FSR sensors.
-            const uint16_t aftertouchMaxValue;          ///< Maxmimum raw ADC reading for aftertouch on FSR sensors.
-            const uint16_t digitalValueThresholdOn;     ///< Value above which buton connected to analog input is considered pressed.
-            const uint16_t digitalValueThresholdOff;    ///< Value below which button connected to analog input is considered released.
+            const uint16_t adcMaxValue;                  ///< Maxmimum raw ADC value.
+            const uint16_t midiStepMinDiff7bit;          ///< Minimum difference between two 7-bit MIDI values to consider that value has been changed.
+            const uint16_t midiStepMinDiff14bit;         ///< Minimum difference between two 14-bit MIDI values to consider that value has been changed.
+            const uint16_t midiStepMulDirChange7bit;     ///< Number by which step difference for 7-bit values will be multipled when direction of the value changes.
+            const uint16_t midiStepMulDirChange14bit;    ///< Number by which step difference for 14-bit values will be multipled when direction of the value changes.
+            const uint16_t fsrMinValue;                  ///< Minimum raw ADC reading for FSR sensors.
+            const uint16_t fsrMaxValue;                  ///< Maximum raw ADC reading for FSR sensors.
+            const uint16_t aftertouchMaxValue;           ///< Maxmimum raw ADC reading for aftertouch on FSR sensors.
+            const uint16_t digitalValueThresholdOn;      ///< Value above which buton connected to analog input is considered pressed.
+            const uint16_t digitalValueThresholdOff;     ///< Value below which button connected to analog input is considered released.
         } adcConfig_t;
 
         enum class type_t : uint8_t
@@ -95,13 +97,12 @@ namespace IO
             , display(display)
 #endif
             , cInfo(cInfo)
+            , adc7bitStep((adcConfig.adcMaxValue + 1) / 128)
         {}
 
         void         update();
         void         debounceReset(uint16_t index);
         void         setButtonHandler(void (*fptr)(uint8_t adcIndex, bool state));
-        void         enableExpFiltering();
-        void         disableExpFiltering();
         adcConfig_t& config();
 
         private:
@@ -113,28 +114,53 @@ namespace IO
         };
 
         adcConfig_t adc10bit = {
-            .adcMaxValue              = 1023,
-            .stepMinDiff7bit          = 6,
-            .stepMinDiff14bit         = 1,
-            .fsrMinValue              = 40,
-            .fsrMaxValue              = 340,
-            .aftertouchMaxValue       = 600,
-            .digitalValueThresholdOn  = 1000,
-            .digitalValueThresholdOff = 600,
+            .adcMaxValue               = 1023,
+            .midiStepMinDiff7bit       = 1,
+            .midiStepMinDiff14bit      = 32,
+            .midiStepMulDirChange7bit  = 1,
+            .midiStepMulDirChange14bit = 2,
+            .fsrMinValue               = 40,
+            .fsrMaxValue               = 340,
+            .aftertouchMaxValue        = 600,
+            .digitalValueThresholdOn   = 1000,
+            .digitalValueThresholdOff  = 600,
         };
 
         adcConfig_t adc12bit = {
-            .adcMaxValue              = 4095,
-            .stepMinDiff7bit          = 24,
-            .stepMinDiff14bit         = 2,
-            .fsrMinValue              = 160,
-            .fsrMaxValue              = 1360,
-            .aftertouchMaxValue       = 2400,
-            .digitalValueThresholdOn  = 4000,
-            .digitalValueThresholdOff = 2400,
+            .adcMaxValue               = 4095,
+            .midiStepMinDiff7bit       = 1,
+            .midiStepMinDiff14bit      = 16,
+            .midiStepMulDirChange7bit  = 1,
+            .midiStepMulDirChange14bit = 4,
+            .fsrMinValue               = 160,
+            .fsrMaxValue               = 1360,
+            .aftertouchMaxValue        = 2400,
+            .digitalValueThresholdOn   = 4000,
+            .digitalValueThresholdOff  = 2400,
         };
 
-        uint16_t getHysteresisValue(uint8_t analogID, int16_t value);
+        class EMA
+        {
+            //exponential moving average filter
+            public:
+            EMA() {}
+
+            // use factor 0.5 for easier bitwise math
+            uint16_t value(uint16_t rawData)
+            {
+                currentValue = (rawData >> 1) + (currentValue >> 1);
+                return currentValue;
+            }
+
+            void reset()
+            {
+                currentValue = 0;
+            }
+
+            private:
+            uint16_t currentValue = 0;
+        };
+
         void     checkPotentiometerValue(type_t analogType, uint8_t analogID, uint32_t value);
         void     checkFSRvalue(uint8_t analogID, uint16_t pressure);
         bool     fsrPressureStable(uint8_t analogID);
@@ -155,11 +181,13 @@ namespace IO
 #endif
         ComponentInfo& cInfo;
 
-        void (*buttonHandler)(uint8_t adcIndex, bool state)    = nullptr;
-        uint16_t       lastAnalogueValue[MAX_NUMBER_OF_ANALOG] = {};
-        uint8_t        fsrPressed[MAX_NUMBER_OF_ANALOG]        = {};
-        potDirection_t lastDirection[MAX_NUMBER_OF_ANALOG]     = {};
-        bool           expFilterUsed                           = true;
+        void (*buttonHandler)(uint8_t adcIndex, bool state) = nullptr;
+
+        uint16_t       lastMIDIValue[MAX_NUMBER_OF_ANALOG] = {};
+        uint8_t        fsrPressed[MAX_NUMBER_OF_ANALOG]    = {};
+        potDirection_t lastDirection[MAX_NUMBER_OF_ANALOG] = {};
+        EMA            emaFilter[MAX_NUMBER_OF_ANALOG];
+        const uint16_t adc7bitStep;
     };
 
     /// @}
